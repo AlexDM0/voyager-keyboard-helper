@@ -5,6 +5,7 @@ const CONFIG = require('../config');
 const configSnippet = require('../snippets/config.h.snippet');
 const rulesSnippet = require('../snippets/rules.mk.snippet');
 const keymapSnippet = require('../snippets/keymap.c.snippet');
+const macros = require('../snippets/macros');
 
 
 // Function to copy files recursively
@@ -65,11 +66,26 @@ function modifyFirmware() {
   // replace all the TT entries with MO
   const newKeymapContentWithMO = newKeymapContentWithProcessRecord.replace(/TT\(/g, 'MO(');
 
+  const newKeymapWithMacros = insertMacros(newKeymapContentWithMO)
+
   // replace all the SS_DELAY(100) with SS_DELAY(MACRO_SPEED)
-  const newKeymapContentWithSpeed = newKeymapContentWithMO.replace(/SS_DELAY\(100\)/g, 'SS_DELAY(MACRO_SPEED)');
+  const newKeymapContentWithSpeed = newKeymapWithMacros.replace(/SS_DELAY\(100\)/g, 'SS_DELAY(MACRO_SPEED)');
 
   // write the newKeymapContent to the keymap.c file
   fs.writeFileSync(kemapPath, newKeymapContentWithSpeed);
+}
+
+
+function insertMacros(newKeymapContentWithMO) {
+  let content = newKeymapContentWithMO
+  // construct macro string
+  for (const macroKey in macros) {
+    const macro = macros[macroKey];
+    const str = macro.with.join(' SS_DELAY(MACRO_SPEED) ').toUpperCase();
+    content = content.replace(macro.replace, str);
+  }
+
+  return content;
 }
 
 module.exports = modifyFirmware;

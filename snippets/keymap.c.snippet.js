@@ -2,7 +2,7 @@ module.exports = {
 
   top:`
 #include "process_achordion.h"
-#define MACRO_SPEED 50
+#define MACRO_SPEED 30
 
 `,
 
@@ -33,16 +33,29 @@ bool achordion_chord(uint16_t tap_hold_keycode,
         return true;
   }
 
+  // control c to kill something
+  if (tap_hold_keycode == MT(MOD_LCTL, KC_S) && other_keycode == KC_C) {
+    return true;
+  }
+  // command r to reload
+  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == KC_R) {
+    return true;
+  }
+  // command t to reload
+  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == KC_T) {
+    return true;
+  }
+
   // thumb keys should not affect this
   switch (tap_hold_keycode) {
     case LT(3,KC_ENTER):
     case LT(2,KC_TAB):
-    case MT(MOD_LCTL, KC_S):
       return true;
     default:
       return achordion_opposite_hands(tap_hold_record, other_record);
   }
 }
+
 
 
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
