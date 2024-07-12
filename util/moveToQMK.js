@@ -6,7 +6,7 @@ const CONFIG = require('../config');
 function copyFilesSync(source, destination) {
   // Remove the destination directory if it exists
   if (fs.existsSync(destination)) {
-    fs.rmdirSync(destination, { recursive: true });
+    fs.rmSync(destination, { recursive: true });
   }
 
   // Ensure the destination directory exists, if not create it

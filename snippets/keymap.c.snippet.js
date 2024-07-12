@@ -28,6 +28,8 @@ bool achordion_chord(uint16_t tap_hold_keycode,
   // thumb keys should be affected by this
   switch (other_keycode) {
       case TD(DANCE_0):
+      case LT(3,KC_ENTER):
+      case LT(2,KC_TAB):
         return true;
   }
 

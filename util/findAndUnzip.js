@@ -20,6 +20,7 @@ async function extractZip() {
     }
 
     const mostRecentFile = zipFiles[0].name;
+    console.log('Found most recent firmware file:', mostRecentFile);
     const tmpDir = CONFIG.tmpFolderPath;
 
     // Delete the tmp directory if it exists
@@ -35,6 +36,7 @@ async function extractZip() {
     console.log('Extraction complete')
   } catch (err) {
     console.error('Error in extractZipSync:', err);
+    throw err
   }
 }
 
