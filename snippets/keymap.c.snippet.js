@@ -62,6 +62,14 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case MT(MOD_LSFT, KC_F):
         case MT(MOD_RSFT, KC_J):
+        
+        // for maya, sturdy and colemak
+        case MT(MOD_LSFT, KC_T):
+        case MT(MOD_LSFT, KC_S):
+        case MT(MOD_LSFT, KC_D):
+        
+        case MT(MOD_RSFT, KC_N):
+        case MT(MOD_RSFT, KC_H):
             return true;
         default:
             return false;
