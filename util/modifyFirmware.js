@@ -53,18 +53,18 @@ function modifyFirmware() {
   const keymapContent = fs.readFileSync(kemapPath, 'utf8');
   // prepend the keymapTop to the keymapContent
   const newKeymapContent = keymapSnippet.top + keymapContent
-  const lines = newKeymapContent.split('\n');
-  const newLines = [];
-  for (const line of lines) {
-    newLines.push(line);
-    if (line.includes('bool process_record_user(')) {
-      newLines.push(keymapSnippet.processRecordUser);
-    }
-  }
-  const newKeymapContentWithProcessRecord = newLines.join('\n');
+  // const lines = newKeymapContent.split('\n');
+  // const newLines = [];
+  // for (const line of lines) {
+  //   newLines.push(line);
+  //   if (line.includes('bool process_record_user(')) {
+  //     newLines.push(keymapSnippet.processRecordUser);
+  //   }
+  // }
+  // const newKeymapContentWithProcessRecord = newLines.join('\n');
 
   // replace all the TT entries with MO
-  const newKeymapContentWithMO = newKeymapContentWithProcessRecord.replace(/TT\(/g, 'MO(');
+  const newKeymapContentWithMO = newKeymapContent.replace(/TT\(/g, 'MO(');
 
   const newKeymapWithMacros = insertMacros(newKeymapContentWithMO)
 

@@ -6,19 +6,8 @@ module.exports = {
 
 `,
 
-  processRecordUser: `
-  if (!process_achordion(keycode, record)) {
-    return false;
-  }
-`,
-
   bottom:`
 
-
-
-void matrix_scan_user(void) {
-  achordion_task();
-}
 
 
 bool achordion_chord(uint16_t tap_hold_keycode,
@@ -41,13 +30,14 @@ bool achordion_chord(uint16_t tap_hold_keycode,
   if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == KC_R) {
     return true;
   }
-  // command t to reload
+  // command t to open new tab
   if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == KC_T) {
     return true;
   }
 
   // thumb keys should not affect this
   switch (tap_hold_keycode) {
+    case LT(1,KC_EQUAL):
     case LT(3,KC_ENTER):
     case LT(2,KC_TAB):
       return true;
@@ -62,12 +52,12 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case MT(MOD_LSFT, KC_F):
         case MT(MOD_RSFT, KC_J):
-        
+
         // for maya, sturdy and colemak
         case MT(MOD_LSFT, KC_T):
         case MT(MOD_LSFT, KC_S):
         case MT(MOD_LSFT, KC_D):
-        
+
         case MT(MOD_RSFT, KC_N):
         case MT(MOD_RSFT, KC_H):
             return true;
@@ -79,6 +69,7 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
 
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
+        case LT(1,KC_EQUAL):  // layer tap equal for numeric layer
         case LT(3,KC_ENTER): // left thumb
         case LT(2,KC_TAB):   // right thumb
             return true;  // Eagerly apply Shift and Ctrl mods.
@@ -110,6 +101,7 @@ bool achordion_eager_mod(uint8_t mod) {
       return false;
   }
 }
+
 `
 
 }

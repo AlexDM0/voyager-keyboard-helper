@@ -4,6 +4,13 @@ This utiliy will help you create a custom keyboard layout for your Voyager keybo
     
 If you want to use the Oryx configurator, but need the qmk firmware level features, this can help!
 
+My setup uses the following features not available in Oryx:
+- Achordion
+- Permissive hold per key 
+- Hold tap per key
+- Unlimited length macros
+
+
 ## How to use 
 
 first install the dependencies:
@@ -39,3 +46,5 @@ or via the shell script which you can add to your PATH:
 ```bash 
 ./flashKeyboard.sh
 ```
+
+#
