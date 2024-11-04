@@ -17,8 +17,8 @@ bool achordion_chord(uint16_t tap_hold_keycode,
   // thumb keys should be affected by this
   switch (other_keycode) {
       case TD(DANCE_0):
-      case LT(3,KC_ENTER):
-      case LT(2,KC_TAB):
+      case LT(4,KC_ENTER):
+      case LT(3,KC_TAB):
         return true;
   }
 
@@ -34,12 +34,24 @@ bool achordion_chord(uint16_t tap_hold_keycode,
   if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == KC_T) {
     return true;
   }
+  // command f to search
+  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == MT(MOD_LSFT, KC_F)) {
+    return true;
+  }
+  // command command enter to commit a message
+  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == LT(4,KC_ENTER)) {
+    return true;
+  }
+  // shift tab for deindent
+  if (tap_hold_keycode == MT(MOD_LSFT, KC_F) && other_keycode == KC_TAB) {
+    return true;
+  }
 
   // thumb keys should not affect this
   switch (tap_hold_keycode) {
-    case LT(1,KC_EQUAL):
-    case LT(3,KC_ENTER):
-    case LT(2,KC_TAB):
+    case LT(2,KC_EQUAL):
+    case LT(4,KC_ENTER):
+    case LT(3,KC_TAB):
       return true;
     default:
       return achordion_opposite_hands(tap_hold_record, other_record);
@@ -69,9 +81,9 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
 
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case LT(1,KC_EQUAL):  // layer tap equal for numeric layer
-        case LT(3,KC_ENTER): // left thumb
-        case LT(2,KC_TAB):   // right thumb
+        case LT(2,KC_EQUAL):  // layer tap equal for numeric layer
+        case LT(4,KC_ENTER): // left thumb
+        case LT(3,KC_TAB):   // right thumb
             return true;  // Eagerly apply Shift and Ctrl mods.
         default:
             return false;

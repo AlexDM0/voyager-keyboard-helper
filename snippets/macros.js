@@ -35,6 +35,21 @@ const macros = {
       'SS_TAP(X_T)',
       'SS_TAP(X_SPACE)',
     ]
+  },
+  yarnStart: {
+    replace: 'SS_LALT(SS_LCTL(SS_LGUI(SS_LSFT(SS_TAP(X_Y)))))',
+    with: [
+      'SS_TAP(X_Y)',
+      'SS_TAP(X_A)',
+      'SS_TAP(X_R)',
+      'SS_TAP(X_N)',
+      'SS_TAP(X_SPACE)',
+      'SS_TAP(X_S)',
+      'SS_TAP(X_T)',
+      'SS_TAP(X_A)',
+      'SS_TAP(X_R)',
+      'SS_TAP(X_T)',
+    ]
   }
 }
 
