@@ -4,6 +4,14 @@ module.exports = {
 #include "process_achordion.h"
 #define MACRO_SPEED 30
 
+#define LAYER_ALT 2
+#define LAYER_NUMBERS 3
+#define LAYER_NAV 4
+#define LAYER_CODING 5
+#define LAYER_CONTROL 6
+#define LAYER_DELETE 14
+
+
 `,
 
   bottom:`
@@ -17,8 +25,8 @@ bool achordion_chord(uint16_t tap_hold_keycode,
   // thumb keys should be affected by this
   switch (other_keycode) {
       case TD(DANCE_0):
-      case LT(4,KC_ENTER):
-      case LT(3,KC_TAB):
+      case LT(LAYER_CODING,KC_ENTER):
+      case LT(LAYER_NAV,KC_TAB):
         return true;
   }
 
@@ -49,10 +57,10 @@ bool achordion_chord(uint16_t tap_hold_keycode,
 
   // thumb keys should not affect this
   switch (tap_hold_keycode) {
-    case LT(2,KC_EQUAL):
-    case LT(4,KC_ENTER):
-    case LT(3,KC_TAB):
-    case LT(13,KC_BSPC):
+    case LT(LAYER_ALT,KC_EQUAL):
+    case LT(LAYER_CODING,KC_ENTER):
+    case LT(LAYER_NAV,KC_TAB):
+    case LT(LAYER_DELETE,KC_BSPC):
       return true;
     default:
       return achordion_opposite_hands(tap_hold_record, other_record);
@@ -82,10 +90,10 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
 
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case LT(2,KC_EQUAL):  // layer tap equal for numeric layer
-        case LT(4,KC_ENTER): // left thumb
-        case LT(13,KC_BSPC): // left thumb
-        case LT(3,KC_TAB):   // right thumb
+        case LT(LAYER_ALT,KC_EQUAL):  // layer tap equal for numeric layer
+        case LT(LAYER_CODING,KC_ENTER): // left thumb
+        case LT(LAYER_DELETE,KC_BSPC): // left thumb
+        case LT(LAYER_NAV,KC_TAB):   // right thumb
             return true;  // Eagerly apply Shift and Ctrl mods.
         default:
             return false;
@@ -119,7 +127,7 @@ bool achordion_eager_mod(uint8_t mod) {
 
 uint16_t get_quick_tap_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case LT(13,KC_BSPC):
+        case LT(LAYER_DELETE,KC_BSPC):
             return 0;
         default:
             return QUICK_TAP_TERM;
