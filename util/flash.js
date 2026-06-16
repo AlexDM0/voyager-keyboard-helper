@@ -6,7 +6,7 @@ function flashKeyboard() {
   // Assuming the patch file is located in the downloads folder and named 'qmk_patch.diff'
   try {
     // Navigate to the QMK firmware directory
-    process.chdir(CONFIG.qmkPath);
+    process.chdir(CONFIG.qmkKeymapPath);
 
     // Run QMK flash
     console.log('Running QMK flash...');

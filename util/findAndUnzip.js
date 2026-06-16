@@ -51,8 +51,10 @@ async function extractZip() {
     // Extract the zip file to the tmp directory
     await extract(path.join(CONFIG.downloads, mostRecentFile), { dir: tmpDir })
 
+    // copy all the files in tmp/
+
     // this was added by oryx, its not needed and causes an error
-    fs.rmSync(path.join(CONFIG.sourceFolderPath,'keymap.json'));
+    // fs.rmSync(path.join(CONFIG.sourceFolderPath,'keymap.json'));
     console.log('Extraction complete')
   } catch (err) {
     console.error('Error in extractZipSync:', err);
