@@ -69,8 +69,6 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
 // Layer-tap keys that switch layers immediately on the next keypress.
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case MT(MOD_LSFT, KC_F):
-        
         case LT(LAYER_ALT,KC_EQUAL):    // layer tap equal for numeric layer
         case LT(LAYER_NUMBERS,KC_V):    // V -> number layer on next keypress
         case LT(LAYER_CODING,KC_ENTER): // left thumb
