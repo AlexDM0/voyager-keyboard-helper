@@ -66,7 +66,27 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-// Layer-tap keys that switch layers immediately on the next keypress.
+// Whitelist of "next" keys for which a Shift home-row mod should eagerly hold
+// (hold-on-other-key-press). '1' = eager Shift; '.' = let Shift tap. Populated
+// per the rule "hold for anything that is NOT a letter and NOT a thumb": the
+// alpha block and the four thumb keys are '.', everything else is '1'.
+// Same LAYOUT shape as chordal_hold_layout -- hand-tune any cell freely.
+const char shift_hold_on_other_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT(
+  '1','1','1','1','1','1',   '1','1','1','1','1','1',
+  '1','.','.','.','.','.',   '.','.','.','.','.','1',
+  '1','.','.','.','.','.',   '.','.','.','.','1','1',
+  '1','.','.','.','.','.',   '.','.','1','1','1','1',
+              '.','.',   '.','.'
+);
+
+static bool shift_eager_on_other(keypos_t key) {
+    if (key.row >= MATRIX_ROWS || key.col >= MATRIX_COLS) return false;
+    return pgm_read_byte(&shift_hold_on_other_layout[key.row][key.col]) == '1';
+}
+
+// Layer-taps that switch layers immediately on any next keypress. Used both by
+// QMK's process_action() path and as the delegate base for the next-key-aware
+// callback below.
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case LT(LAYER_ALT,KC_EQUAL):    // layer tap equal for numeric layer
@@ -77,6 +97,26 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
             return true;
         default:
             return false;
+    }
+}
+
+// Next-key-aware variant (needs the patchQmkCore mod). Shift home-row mods hold
+// eagerly only for whitelisted next keys (non-letter, non-thumb); everything
+// else delegates to the plain callback above. Chordal Hold still force-taps
+// same-hand neighbours, so this fires for opposite-hand symbols/numbers.
+bool get_hold_on_other_key_press_next(uint16_t keycode, keyrecord_t *record,
+                                      uint16_t other_keycode, keyrecord_t *other_record) {
+    switch (keycode) {
+        case MT(MOD_LSFT, KC_F):
+        case MT(MOD_RSFT, KC_J):
+        case MT(MOD_LSFT, KC_T):
+        case MT(MOD_LSFT, KC_S):
+        case MT(MOD_LSFT, KC_D):
+        case MT(MOD_RSFT, KC_N):
+        case MT(MOD_RSFT, KC_H):
+            return shift_eager_on_other(other_record->event.key);
+        default:
+            return get_hold_on_other_key_press(keycode, record);
     }
 }
 
