@@ -82,21 +82,41 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-// Next-key-aware variant (needs the patchQmkCore mod). A home-row mod holds
-// eagerly only when the *next* key is on the opposite hand -- forward-looking, so
-// F+/ -> ? and the right-hand Shift+Cmd+Opt + left-hand R chord both fire on the
-// opposite-hand key, while same-hand neighbours are left to Chordal Hold (which
-// taps them). Chordal Hold already gates same-hand upstream (this only runs once
-// a hold is permitted), so the explicit hand check mainly keeps any '*' thumb or
-// special-chord same-hand case from eager-holding. Layer-taps (thumbs / V / =)
-// fall through and keep firing on any next key.
+// Per-position whitelist for the Shift home-row mods. When a Shift mod-tap is
+// pending and the *next* key is pressed, we read that next key's matrix cell here
+// and eager-hold Shift only on a matching mark; everything else falls through to
+// Chordal Hold / the tapping term (so rolling onto a letter taps -- fixes kijk and
+// mid-word capitals). '1' = hold when LEFT shift (F) is held, '2' = hold when
+// RIGHT shift (J) is held, '.' = never. The marked cells are the non-letter keys
+// on the opposite hand (number row + edge symbols), so F+/ -> ? still fires while
+// letters stay '.'. Same LAYOUT shape as chordal_hold_layout -- tune any cell.
+const char shift_hold_on_other_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT(
+  '2','2','2','2','2','2',   '1','1','1','1','1','1',
+  '2','.','.','.','.','.',   '.','.','.','.','.','1',
+  '2','.','.','.','.','.',   '.','.','.','.','1','1',
+  '2','.','.','.','.','.',   '.','.','1','1','1','1',
+              '.','.',   '.','.'
+);
+
+// Next-key-aware hold-on-other-key-press (needs the patchQmkCore mod).
+//  - Shift mod-taps (F/J): consult shift_hold_on_other_layout above -- hold only
+//    on an explicitly marked next key, otherwise let Chordal Hold / the tapping
+//    term decide (so same-hand and letter rolls tap, e.g. kijk).
+//  - Other home-row mods (GUI/Ctrl/Alt): eager-hold on any opposite-hand key.
+//  - Layer-taps (thumbs / V / =): fire on any next key.
 bool get_hold_on_other_key_press_next(uint16_t keycode, keyrecord_t *record,
                                       uint16_t other_keycode, keyrecord_t *other_record) {
-    if (IS_QK_MOD_TAP(keycode)) {
-        char hand  = chordal_hold_handedness(record->event.key);
-        char other = chordal_hold_handedness(other_record->event.key);
-        return hand != '*' && other != '*' && hand != other;  // opposite hands
+    char want = 0;
+    switch (keycode) {
+        case MT(MOD_LSFT, KC_F): want = '1'; break;  // left shift
+        case MT(MOD_RSFT, KC_J): want = '2'; break;  // right shift
     }
+    if (want != 0) {
+        uint8_t row = other_record->event.key.row;
+        uint8_t col = other_record->event.key.col;
+        return (char)pgm_read_byte(&shift_hold_on_other_layout[row][col]) == want;
+    }
+
     return get_hold_on_other_key_press(keycode, record);
 }
 
