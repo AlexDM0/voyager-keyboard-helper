@@ -1,7 +1,6 @@
 module.exports = {
 
   top:`
-#include "process_achordion.h"
 #define MACRO_SPEED 30
 
 #define LAYER_ALT 2
@@ -18,53 +17,33 @@ module.exports = {
 
 
 
-bool achordion_chord(uint16_t tap_hold_keycode,
-                     keyrecord_t* tap_hold_record,
-                     uint16_t other_keycode,
-                     keyrecord_t* other_record) {
-  // thumb keys should be affected by this
-  switch (other_keycode) {
-      case TD(DANCE_0):
-      case LT(LAYER_CODING,KC_ENTER):
-      case LT(LAYER_NAV,KC_TAB):
-        return true;
-  }
+// Chordal Hold: when another key is pressed before the tapping term, decide
+// whether the tap-hold key may still settle as held. Returning true only
+// *permits* a hold (the tapping term / permissive-hold / hold-on-other-key-press
+// still make the final tap-vs-hold call); returning false forces an immediate
+// tap. Thumbs are '*' in chordal_hold_layout, so get_chordal_hold_default already
+// permits a hold whenever a thumb is the held key OR the next key -- only the
+// non-'*' keys need to be listed explicitly here.
+bool get_chordal_hold(uint16_t tap_hold_keycode,
+                      keyrecord_t* tap_hold_record,
+                      uint16_t other_keycode,
+                      keyrecord_t* other_record) {
+  // DANCE_0 is right-home (not a thumb) -> permit it to chord with a R mod-tap.
+  if (other_keycode == TD(DANCE_0)) return true;
 
-  // control c to kill something
-  if (tap_hold_keycode == MT(MOD_LCTL, KC_S) && other_keycode == KC_C) {
-    return true;
-  }
-  // command r to reload
-  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == KC_R) {
-    return true;
-  }
-  // command t to open new tab
-  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == KC_T) {
-    return true;
-  }
-  // command f to search
-  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == MT(MOD_LSFT, KC_F)) {
-    return true;
-  }
-  // command command enter to commit a message
-  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == LT(4,KC_ENTER)) {
-    return true;
-  }
-  // shift tab for deindent
-  if (tap_hold_keycode == MT(MOD_LSFT, KC_F) && other_keycode == KC_TAB) {
-    return true;
-  }
+  // Same-hand shortcut chords that should still be allowed to hold.
+  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == KC_R) return true; // cmd+r reload
+  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == KC_T) return true; // cmd+t new tab
+  if (tap_hold_keycode == MT(MOD_LGUI, KC_D) && other_keycode == MT(MOD_LSFT, KC_F)) return true; // cmd+f find
 
-  // thumb keys should not affect this
-  switch (tap_hold_keycode) {
-    case LT(LAYER_ALT,KC_EQUAL):
-    case LT(LAYER_CODING,KC_ENTER):
-    case LT(LAYER_NAV,KC_TAB):
-    case LT(LAYER_DELETE,KC_BSPC):
-      return true;
-    default:
-      return achordion_opposite_hands(tap_hold_record, other_record);
-  }
+  // '=' is left-home (not a thumb), so exempt it explicitly. V is intentionally
+  // NOT exempt: digits live on the right hand, so the default opposite-hands rule
+  // gives an instant layer for digits while still typing a same-hand 'v'.
+  if (tap_hold_keycode == LT(LAYER_ALT, KC_EQUAL)) return true;
+
+  // Home-row GUI/Ctrl/Alt fall through here: same-hand neighbours settle as a
+  // tap; opposite-hand and any '*' thumb neighbour is permitted to hold.
+  return get_chordal_hold_default(tap_hold_record, other_record);
 }
 
 
@@ -87,41 +66,20 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-
+// Layer-tap keys that switch layers immediately on the next keypress.
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case LT(LAYER_ALT,KC_EQUAL):  // layer tap equal for numeric layer
+        case MT(MOD_LSFT, KC_F):
+        
+        case LT(LAYER_ALT,KC_EQUAL):    // layer tap equal for numeric layer
+        case LT(LAYER_NUMBERS,KC_V):    // V -> number layer on next keypress
         case LT(LAYER_CODING,KC_ENTER): // left thumb
-        case LT(LAYER_DELETE,KC_BSPC): // left thumb
-        case LT(LAYER_NAV,KC_TAB):   // right thumb
-            return true;  // Eagerly apply Shift and Ctrl mods.
+        case LT(LAYER_DELETE,KC_BSPC):  // left thumb
+        case LT(LAYER_NAV,KC_TAB):      // right thumb
+            return true;
         default:
             return false;
     }
-}
-
-
-
-uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
-  return 500;
-}
-
-
-bool achordion_eager_mod(uint8_t mod) {
-  switch (mod) {
-    case MOD_LSFT:
-    case MOD_RSFT:
-    case MOD_LCTL:
-    case MOD_RCTL:
-    case MOD_LGUI:
-    case MOD_RGUI:
-    case MOD_LALT:
-    case MOD_RALT:
-      return true;  // Eagerly apply Shift and Ctrl mods.
-
-    default:
-      return false;
-  }
 }
 
 
