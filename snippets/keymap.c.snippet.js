@@ -66,24 +66,6 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-// Whitelist of "next" keys for which a Shift home-row mod should eagerly hold
-// (hold-on-other-key-press). '1' = eager Shift; '.' = let Shift tap. Populated
-// per the rule "hold for anything that is NOT a letter and NOT a thumb": the
-// alpha block and the four thumb keys are '.', everything else is '1'.
-// Same LAYOUT shape as chordal_hold_layout -- hand-tune any cell freely.
-const char shift_hold_on_other_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT(
-  '1','1','1','1','1','1',   '1','1','1','1','1','1',
-  '1','.','.','.','.','.',   '.','.','.','.','.','1',
-  '1','.','.','.','.','.',   '.','.','.','.','1','1',
-  '1','.','.','.','.','.',   '.','.','1','1','1','1',
-              '.','.',   '.','.'
-);
-
-static bool shift_eager_on_other(keypos_t key) {
-    if (key.row >= MATRIX_ROWS || key.col >= MATRIX_COLS) return false;
-    return pgm_read_byte(&shift_hold_on_other_layout[key.row][key.col]) == '1';
-}
-
 // Layer-taps that switch layers immediately on any next keypress. Used both by
 // QMK's process_action() path and as the delegate base for the next-key-aware
 // callback below.
@@ -100,50 +82,22 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-// Next-key-aware variant (needs the patchQmkCore mod). Shift home-row mods hold
-// eagerly only for whitelisted next keys (non-letter, non-thumb); everything
-// else delegates to the plain callback above. Chordal Hold still force-taps
-// same-hand neighbours, so this fires for opposite-hand symbols/numbers.
+// Next-key-aware variant (needs the patchQmkCore mod). A home-row mod holds
+// eagerly only when the *next* key is on the opposite hand -- forward-looking, so
+// F+/ -> ? and the right-hand Shift+Cmd+Opt + left-hand R chord both fire on the
+// opposite-hand key, while same-hand neighbours are left to Chordal Hold (which
+// taps them). Chordal Hold already gates same-hand upstream (this only runs once
+// a hold is permitted), so the explicit hand check mainly keeps any '*' thumb or
+// special-chord same-hand case from eager-holding. Layer-taps (thumbs / V / =)
+// fall through and keep firing on any next key.
 bool get_hold_on_other_key_press_next(uint16_t keycode, keyrecord_t *record,
                                       uint16_t other_keycode, keyrecord_t *other_record) {
-    switch (keycode) {
-        case MT(MOD_LSFT, KC_F):
-        case MT(MOD_RSFT, KC_J):
-        case MT(MOD_LSFT, KC_T):
-        case MT(MOD_LSFT, KC_S):
-        case MT(MOD_LSFT, KC_D):
-        case MT(MOD_RSFT, KC_N):
-        case MT(MOD_RSFT, KC_H):
-            return shift_eager_on_other(other_record->event.key);
-        default:
-            return get_hold_on_other_key_press(keycode, record);
+    if (IS_QK_MOD_TAP(keycode)) {
+        char hand  = chordal_hold_handedness(record->event.key);
+        char other = chordal_hold_handedness(other_record->event.key);
+        return hand != '*' && other != '*' && hand != other;  // opposite hands
     }
-}
-
-
-// Hand-gated Flow Tap. We remember the previous key's hand ourselves (via our
-// chordal_hold_layout map) so we never have to patch QMK to expose it.
-static char flow_prev_hand = '*';
-
-void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (record->event.pressed
-        && record->event.key.row < MATRIX_ROWS
-        && record->event.key.col < MATRIX_COLS) {
-        flow_prev_hand = chordal_hold_handedness(record->event.key);
-    }
-}
-
-// While in flow (this key pressed soon after the previous one), force *same-hand*
-// mod-taps to tap, so same-hand rolls like "kijk" can't sneak in a mod. Opposite-
-// hand mods return 0 (Flow Tap off) so cross-hand mod chords still hold, and a
-// deliberate (paused) same-hand chord still holds because flow has expired.
-// Layer-taps (thumbs / V / =) aren't mod-taps, so they're never flow-tapped.
-uint16_t get_flow_tap_term(uint16_t keycode, keyrecord_t *record, uint16_t prev_keycode) {
-    if (IS_QK_MOD_TAP(keycode)
-        && chordal_hold_handedness(record->event.key) == flow_prev_hand) {
-        return FLOW_TAP_TERM;
-    }
-    return 0;
+    return get_hold_on_other_key_press(keycode, record);
 }
 
 
