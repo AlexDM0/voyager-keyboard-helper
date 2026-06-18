@@ -26,7 +26,7 @@
   <!-- decision -->
   <rect x="220" y="168" width="240" height="58" rx="8" fill="#E6F1FB" stroke="#CFE2F6"/>
   <text x="340" y="192" font-size="14" font-weight="500" fill="#0C447C" text-anchor="middle">Also sees the next key</text>
-  <text x="340" y="210" font-size="12" fill="#185FA5" text-anchor="middle">decides per next key</text>
+  <text x="340" y="210" font-size="12" fill="#185FA5" text-anchor="middle">looks it up in the shift map</text>
 
   <!-- outcomes -->
   <rect x="60" y="258" width="260" height="58" rx="8" fill="#FAEEDA" stroke="#F2DDB0"/>

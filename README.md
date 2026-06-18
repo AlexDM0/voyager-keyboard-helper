@@ -88,6 +88,18 @@ decisions to choose tap vs hold. The order matters:
 > resolves on plain release (tap) vs continued hold (hold) — none of the three
 > callbacks are consulted.
 
+**Whether a key opts into eager hold (step 2) is itself per-key**, and that split
+is where most of the feel is tuned:
+
+- **Shift** (`F` / `J`) — *next-key-aware*: eager-holds only before the keys
+  marked in `shift_hold_on_other_layout` (opposite-hand numbers & symbols), so
+  `F` + `/` → `?` is instant while `fish` stays `fish`. (See below.)
+- **GUI / Ctrl / Alt** (`D`/`K`, `S`/`L`, `A`/`;`) — *timeout only*: no eager
+  hold at all, so a fast roll can never flip one into an accidental mod; you hold
+  past the tapping term to get the mod.
+- **Thumbs, `V`, `=`** (layer-taps) — eager for **any** next key, so the layer
+  switches the instant the next key goes down.
+
 ### The catch this repo fixes
 
 In **stock QMK, only `get_chordal_hold` sees the interrupting keycode** — HOOKP
@@ -110,9 +122,24 @@ callback or its other call sites.
 ![After: the patched get_hold_on_other_key_press_next also receives the next key, so it holds before a non-letter and taps before a letter.](docs/hookp-after.png)
 
 Now the keymap can scope eager-hold by the *next* key. The Shift home-row mods
-consult a `shift_hold_on_other_layout` whitelist map (same `LAYOUT(...)` shape as
-`chordal_hold_layout`) and only hold eagerly before non-letter, non-thumb keys —
-so `F` + `/` → `?` fires instantly, while `fish` stays `fish`.
+consult a `shift_hold_on_other_layout` map — the same `LAYOUT(...)` shape as
+`chordal_hold_layout`, so every cell is one physical key:
+
+```c
+const char shift_hold_on_other_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT(
+  '2','2','2','2','2','2',   '1','1','1','1','1','1',
+  '2','.','.','.','.','.',   '.','.','.','.','.','1',
+  '2','.','.','.','.','.',   '.','.','.','.','1','1',
+  '2','.','.','.','.','.',   '.','.','1','1','1','1',
+              '.','.',   '.','.'
+);
+```
+
+`'1'` = eager-hold when **left** Shift (`F`) is held, `'2'` = eager-hold when
+**right** Shift (`J`) is held, `'.'` = never. The marks cover the opposite-hand
+number row and outer symbol keys, so `F` + `/` → `?` fires instantly — while
+every letter and thumb is `'.'`, so `fish` stays `fish` and `kijk` stays `kijk`.
+Tune any cell by hand to taste.
 
 ---
 
