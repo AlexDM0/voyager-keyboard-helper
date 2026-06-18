@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="530" viewBox="0 0 680 530" role="img" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <title>How a tap or hold resolves</title>
+  <desc>Decision ladder: Chordal Hold checks hand first, then hold-on-other-key-press on the press, then permissive hold on the release.</desc>
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto">
+      <path d="M0,0 L8,4.5 L0,9 z" fill="#73726c"/>
+    </marker>
+  </defs>
+
+  <rect x="1" y="1" width="678" height="528" rx="16" fill="#FAF9F5" stroke="#ECE7DC" stroke-width="1.5"/>
+
+  <text x="40" y="46" font-size="18" font-weight="500" fill="#3d3d3a">How a tap or hold resolves</text>
+  <text x="40" y="68" font-size="13" fill="#73726c">when another key is pressed before the tapping term</text>
+
+  <!-- spine connectors -->
+  <path d="M175,144 L175,174" fill="none" stroke="#bfbdb0" stroke-width="1.6" marker-end="url(#ah)"/>
+  <path d="M175,232 L175,270" fill="none" stroke="#bfbdb0" stroke-width="1.6" marker-end="url(#ah)"/>
+  <path d="M175,328 L175,366" fill="none" stroke="#bfbdb0" stroke-width="1.6" marker-end="url(#ah)"/>
+  <path d="M175,424 L175,454" fill="none" stroke="#bfbdb0" stroke-width="1.6" marker-end="url(#ah)"/>
+  <text x="184" y="256" font-size="11" fill="#73726c">opposite hand</text>
+  <text x="184" y="352" font-size="11" fill="#73726c">false</text>
+  <text x="184" y="445" font-size="11" fill="#73726c">released first</text>
+
+  <!-- right connectors -->
+  <path d="M280,202 L408,202" fill="none" stroke="#bfbdb0" stroke-width="1.6" marker-end="url(#ah)"/>
+  <path d="M280,300 L408,300" fill="none" stroke="#bfbdb0" stroke-width="1.6" marker-end="url(#ah)"/>
+  <path d="M280,396 L408,396" fill="none" stroke="#bfbdb0" stroke-width="1.6" marker-end="url(#ah)"/>
+  <text x="344" y="196" font-size="11" fill="#73726c" text-anchor="middle">same hand</text>
+  <text x="344" y="294" font-size="11" fill="#73726c" text-anchor="middle">true</text>
+  <text x="344" y="390" font-size="11" fill="#73726c" text-anchor="middle">nested</text>
+
+  <!-- spine boxes -->
+  <rect x="70" y="88" width="210" height="56" rx="8" fill="#F1EFE8" stroke="#E1DDD0"/>
+  <text x="175" y="120" font-size="14" font-weight="500" fill="#444441" text-anchor="middle">Another key pressed</text>
+
+  <rect x="70" y="176" width="210" height="56" rx="8" fill="#E6F1FB" stroke="#CFE2F6"/>
+  <text x="175" y="200" font-size="14" font-weight="500" fill="#0C447C" text-anchor="middle">Chordal Hold</text>
+  <text x="175" y="218" font-size="12" fill="#185FA5" text-anchor="middle">which hand?</text>
+
+  <rect x="70" y="272" width="210" height="56" rx="8" fill="#E6F1FB" stroke="#CFE2F6"/>
+  <text x="175" y="296" font-size="14" font-weight="500" fill="#0C447C" text-anchor="middle">Hold-on-other-press?</text>
+  <text x="175" y="314" font-size="12" fill="#185FA5" text-anchor="middle">checked on the press</text>
+
+  <rect x="70" y="368" width="210" height="56" rx="8" fill="#E6F1FB" stroke="#CFE2F6"/>
+  <text x="175" y="392" font-size="14" font-weight="500" fill="#0C447C" text-anchor="middle">Permissive hold?</text>
+  <text x="175" y="410" font-size="12" fill="#185FA5" text-anchor="middle">checked on the release</text>
+
+  <rect x="70" y="456" width="210" height="52" rx="8" fill="#EAF3DE" stroke="#D3E6BC"/>
+  <text x="175" y="487" font-size="14" font-weight="500" fill="#27500A" text-anchor="middle">Settle TAP</text>
+
+  <!-- outcome boxes -->
+  <rect x="410" y="176" width="210" height="52" rx="8" fill="#EAF3DE" stroke="#D3E6BC"/>
+  <text x="515" y="199" font-size="14" font-weight="500" fill="#27500A" text-anchor="middle">Settle TAP</text>
+  <text x="515" y="217" font-size="12" fill="#3B6D11" text-anchor="middle">same-hand rolls protected</text>
+
+  <rect x="410" y="274" width="210" height="52" rx="8" fill="#FAEEDA" stroke="#F2DDB0"/>
+  <text x="515" y="297" font-size="14" font-weight="500" fill="#633806" text-anchor="middle">Settle HOLD</text>
+  <text x="515" y="315" font-size="12" fill="#854F0B" text-anchor="middle">fires now, eagerly</text>
+
+  <rect x="410" y="370" width="210" height="52" rx="8" fill="#FAEEDA" stroke="#F2DDB0"/>
+  <text x="515" y="393" font-size="14" font-weight="500" fill="#633806" text-anchor="middle">Settle HOLD</text>
+  <text x="515" y="411" font-size="12" fill="#854F0B" text-anchor="middle">nested release</text>
+</svg>

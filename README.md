@@ -33,7 +33,6 @@ node updateKeyboard.js
 # or, if you put it on your PATH:
 ./flashKeyboard.sh
 ```
-
 ---
 
 ## Why not just Oryx?
@@ -72,34 +71,7 @@ mod-tap (e.g. Shift on `F`) or layer-tap (e.g. number layer on `V`) and then
 press **another key before the tapping term expires**, QMK runs a chain of
 decisions to choose tap vs hold. The order matters:
 
-```mermaid
-flowchart TD
-    A["Another key pressed<br/>before the tapping term"]
-    B{"Chordal Hold: which hand?<br/>handedness gate, runs first"}
-    TAP1["Settle TAP<br/>protects same-hand rolls"]
-    C{"HOOKP?<br/>checked on the press"}
-    HOLD1["Settle HOLD now<br/>permissive never consulted"]
-    D{"Permissive hold?<br/>checked on the release"}
-    TAP2["Settle TAP<br/>if released first"]
-    HOLD2["Settle HOLD"]
-
-    A --> B
-    B -->|same hand| TAP1
-    B -->|opposite hand| C
-    C -->|true| HOLD1
-    C -->|false| D
-    D -->|false| TAP2
-    D -->|true| HOLD2
-
-    classDef start fill:#ede9fe,stroke:#7c3aed,color:#5b21b6;
-    classDef decide fill:#dbeafe,stroke:#2563eb,color:#1e40af;
-    classDef tap fill:#dcfce7,stroke:#16a34a,color:#166534;
-    classDef hold fill:#fed7aa,stroke:#ea580c,color:#9a3412;
-    class A start;
-    class B,C,D decide;
-    class TAP1,TAP2 tap;
-    class HOLD1,HOLD2 hold;
-```
+![How a tap or hold resolves: Chordal Hold checks the hand first, then hold-on-other-key-press on the press, then permissive hold on the release.](docs/hold-flow.png)
 
 1. **Chordal Hold (`get_chordal_hold`)** runs *first* as a handedness gate. If
    the next key is on the **same hand**, it settles as a **tap** — this is what
@@ -125,24 +97,7 @@ make Shift hold eagerly before a symbol but not before a letter.
 
 **Before — `get_hold_on_other_key_press(F)` is blind to the next key:**
 
-```mermaid
-flowchart TD
-    P["Hold F = Shift, press next key"]
-    H{"HOOKP: get_hold_on_other_key_press(F)<br/>sees only the tap-hold key, not what is next"}
-    HALL["Eager HOLD for EVERY next key<br/>F + / gives ?  ...but F + i also gives I"]
-    TALL["Eager for NOTHING<br/>falls back to permissive hold / timeout"]
-    P --> H
-    H -->|"F is listed"| HALL
-    H -->|"F not listed"| TALL
-    classDef start fill:#ede9fe,stroke:#7c3aed,color:#5b21b6;
-    classDef decide fill:#dbeafe,stroke:#2563eb,color:#1e40af;
-    classDef tap fill:#dcfce7,stroke:#16a34a,color:#166534;
-    classDef hold fill:#fed7aa,stroke:#ea580c,color:#9a3412;
-    class P start;
-    class H decide;
-    class HALL hold;
-    class TALL tap;
-```
+![Before: stock QMK get_hold_on_other_key_press only sees the held key, so it is eager for every next key or none.](docs/hookp-before.png)
 
 This repo ships a tiny, idempotent QMK core patch
 ([`util/patchQmkCore.js`](util/patchQmkCore.js)) that **adds** a next-key-aware
@@ -152,24 +107,7 @@ callback or its other call sites.
 
 **After — the patched callback also receives the next key:**
 
-```mermaid
-flowchart TD
-    P["Hold F = Shift, press next key"]
-    H{"HOOKP: get_hold_on_other_key_press_next(F, next)<br/>also sees the next key"}
-    HOLD["next = / (non-letter)<br/>eager HOLD, gives ?"]
-    TAP["next = i (letter)<br/>no eager hold, gives i"]
-    P --> H
-    H -->|"whitelist: non-letter"| HOLD
-    H -->|"whitelist: letter"| TAP
-    classDef start fill:#ede9fe,stroke:#7c3aed,color:#5b21b6;
-    classDef decide fill:#dbeafe,stroke:#2563eb,color:#1e40af;
-    classDef tap fill:#dcfce7,stroke:#16a34a,color:#166534;
-    classDef hold fill:#fed7aa,stroke:#ea580c,color:#9a3412;
-    class P start;
-    class H decide;
-    class HOLD hold;
-    class TAP tap;
-```
+![After: the patched get_hold_on_other_key_press_next also receives the next key, so it holds before a non-letter and taps before a letter.](docs/hookp-after.png)
 
 Now the keymap can scope eager-hold by the *next* key. The Shift home-row mods
 consult a `shift_hold_on_other_layout` whitelist map (same `LAYOUT(...)` shape as

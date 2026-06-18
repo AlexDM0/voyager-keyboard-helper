@@ -121,6 +121,32 @@ bool get_hold_on_other_key_press_next(uint16_t keycode, keyrecord_t *record,
 }
 
 
+// Hand-gated Flow Tap. We remember the previous key's hand ourselves (via our
+// chordal_hold_layout map) so we never have to patch QMK to expose it.
+static char flow_prev_hand = '*';
+
+void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (record->event.pressed
+        && record->event.key.row < MATRIX_ROWS
+        && record->event.key.col < MATRIX_COLS) {
+        flow_prev_hand = chordal_hold_handedness(record->event.key);
+    }
+}
+
+// While in flow (this key pressed soon after the previous one), force *same-hand*
+// mod-taps to tap, so same-hand rolls like "kijk" can't sneak in a mod. Opposite-
+// hand mods return 0 (Flow Tap off) so cross-hand mod chords still hold, and a
+// deliberate (paused) same-hand chord still holds because flow has expired.
+// Layer-taps (thumbs / V / =) aren't mod-taps, so they're never flow-tapped.
+uint16_t get_flow_tap_term(uint16_t keycode, keyrecord_t *record, uint16_t prev_keycode) {
+    if (IS_QK_MOD_TAP(keycode)
+        && chordal_hold_handedness(record->event.key) == flow_prev_hand) {
+        return FLOW_TAP_TERM;
+    }
+    return 0;
+}
+
+
 uint16_t get_quick_tap_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case LT(LAYER_DELETE,KC_BSPC):

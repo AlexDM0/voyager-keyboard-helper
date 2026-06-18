@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="336" viewBox="0 0 680 336" role="img" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <title>Before: HOOKP is blind to the next key</title>
+  <desc>In stock QMK, get_hold_on_other_key_press only sees the held key, so it is all-or-nothing per key.</desc>
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto">
+      <path d="M0,0 L8,4.5 L0,9 z" fill="#73726c"/>
+    </marker>
+  </defs>
+
+  <rect x="1" y="1" width="678" height="334" rx="16" fill="#FAF9F5" stroke="#ECE7DC" stroke-width="1.5"/>
+
+  <text x="40" y="46" font-size="18" font-weight="500" fill="#3d3d3a">Before — HOOKP can't see the next key</text>
+  <text x="40" y="68" font-size="13" fill="#73726c" font-family="ui-monospace,Menlo,Consolas,monospace">get_hold_on_other_key_press(F)</text>
+
+  <!-- connectors -->
+  <path d="M340,142 L340,166" fill="none" stroke="#bfbdb0" stroke-width="1.6" marker-end="url(#ah)"/>
+  <path d="M300,226 L210,258" fill="none" stroke="#bfbdb0" stroke-width="1.6" marker-end="url(#ah)"/>
+  <path d="M380,226 L470,258" fill="none" stroke="#bfbdb0" stroke-width="1.6" marker-end="url(#ah)"/>
+  <text x="232" y="250" font-size="11" fill="#73726c" text-anchor="middle">F listed</text>
+  <text x="448" y="250" font-size="11" fill="#73726c" text-anchor="middle">not listed</text>
+
+  <!-- press node -->
+  <rect x="240" y="90" width="200" height="52" rx="8" fill="#F1EFE8" stroke="#E1DDD0"/>
+  <text x="340" y="121" font-size="14" font-weight="500" fill="#444441" text-anchor="middle">Hold F = Shift, press a key</text>
+
+  <!-- decision -->
+  <rect x="220" y="168" width="240" height="58" rx="8" fill="#E6F1FB" stroke="#CFE2F6"/>
+  <text x="340" y="192" font-size="14" font-weight="500" fill="#0C447C" text-anchor="middle">Sees only the held key</text>
+  <text x="340" y="210" font-size="12" fill="#185FA5" text-anchor="middle">blind to what comes next</text>
+
+  <!-- outcomes -->
+  <rect x="60" y="258" width="260" height="58" rx="8" fill="#FAEEDA" stroke="#F2DDB0"/>
+  <text x="190" y="282" font-size="14" font-weight="500" fill="#633806" text-anchor="middle">Eager for EVERY next key</text>
+  <text x="190" y="300" font-size="12" fill="#854F0B" text-anchor="middle">F+/ gives ?  …but F+i gives I</text>
+
+  <rect x="360" y="258" width="260" height="58" rx="8" fill="#F1EFE8" stroke="#E1DDD0"/>
+  <text x="490" y="282" font-size="14" font-weight="500" fill="#444441" text-anchor="middle">Eager for nothing</text>
+  <text x="490" y="300" font-size="12" fill="#5F5E5A" text-anchor="middle">permissive hold / timeout</text>
+</svg>
