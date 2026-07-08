@@ -100,7 +100,7 @@ is where most of the feel is tuned:
 - **Thumbs, `V`, `=`** (layer-taps) — eager for **any** next key, so the layer
   switches the instant the next key goes down.
 
-### The catch this repo fixes
+### Improving QMK for shift hold
 
 In **stock QMK, only `get_chordal_hold` sees the interrupting keycode** — HOOKP
 and permissive-hold are told *which* tap-hold key is deciding, but not *what* was
@@ -131,7 +131,7 @@ const char shift_hold_on_other_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT
   '2','.','.','.','.','.',   '.','.','.','.','.','1',
   '2','.','.','.','.','.',   '.','.','.','.','1','1',
   '2','.','.','.','.','.',   '.','.','1','1','1','1',
-              '.','.',   '.','.'
+                  '.','.',   '.','.'
 );
 ```
 

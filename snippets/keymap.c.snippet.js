@@ -52,6 +52,7 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case MT(MOD_LSFT, KC_F):
         case MT(MOD_RSFT, KC_J):
+        case LT(LAYER_NUMBERS,KC_V):    // V -> number layer on next keypress
 
         // for maya, sturdy and colemak
         case MT(MOD_LSFT, KC_T):
@@ -72,7 +73,6 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case LT(LAYER_ALT,KC_EQUAL):    // layer tap equal for numeric layer
-        case LT(LAYER_NUMBERS,KC_V):    // V -> number layer on next keypress
         case LT(LAYER_CODING,KC_ENTER): // left thumb
         case LT(LAYER_DELETE,KC_BSPC):  // left thumb
         case LT(LAYER_NAV,KC_TAB):      // right thumb

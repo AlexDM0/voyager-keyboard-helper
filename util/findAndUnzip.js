@@ -28,11 +28,15 @@ async function extractZip() {
     const seconds = Math.floor(timeDiff / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
     if (minutes < 1) {
       console.log('File was modified', seconds, 'seconds ago\n');
     }
     else if (hours < 1) {
       console.log('File was modified', minutes, 'minutes ago\n');
+    }
+    else if (hours > 48) {
+      console.log('File was modified', days, 'days ago\n');
     }
     else {
       console.log('File was modified', hours, 'hours ago\n');
