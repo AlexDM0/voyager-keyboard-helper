@@ -1,6 +1,6 @@
 const path = require('path')
 
-const qmkPath = path.join(process.env.HOME,'/development/qmk_firmware');
+const qmkPath = path.join(process.env.HOME,'/voyager-keyboard/qmk');
 const keymapName = 'zsa_voyager_alexdm0_source';
 const oryxFirmwareFolderName = 'zsa_voyager_alexdm0_source';
 const tmpFolderPath = path.join(__dirname, 'tmp');
