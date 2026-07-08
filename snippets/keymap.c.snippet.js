@@ -98,10 +98,38 @@ const char shift_hold_on_other_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT
               '.','.',   '.','.'
 );
 
+// Flow-state tracking for the Shift mod-taps. A Shift press that lands within
+// SHIFT_FLOW_TERM ms of the previous keypress is "in flow" (mid-word roll, e.g.
+// the f in fiets) and keeps the conservative matrix behaviour below. A Shift
+// press after a longer pause is "out of flow" (start of a word/sentence, e.g.
+// Ik) and eager-holds on ANY next key, so the capital fires the moment the
+// letter goes down instead of depending on release order / the tapping term.
+// pre_process_record_user sees every event BEFORE the tap-hold buffering, so
+// the gap is measured at the moment Shift itself is pressed.
+#define SHIFT_FLOW_TERM 150
+
+static uint16_t shift_flow_last_press = 0;
+static bool     shift_out_of_flow    = false;
+
+bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (record->event.pressed) {
+        switch (keycode) {
+            case MT(MOD_LSFT, KC_F):
+            case MT(MOD_RSFT, KC_J):
+                shift_out_of_flow =
+                    TIMER_DIFF_16(record->event.time, shift_flow_last_press) > SHIFT_FLOW_TERM;
+                break;
+        }
+        shift_flow_last_press = record->event.time;
+    }
+    return true;
+}
+
 // Next-key-aware hold-on-other-key-press (needs the patchQmkCore mod).
-//  - Shift mod-taps (F/J): consult shift_hold_on_other_layout above -- hold only
-//    on an explicitly marked next key, otherwise let Chordal Hold / the tapping
-//    term decide (so same-hand and letter rolls tap, e.g. kijk).
+//  - Shift mod-taps (F/J): out of flow -> eager-hold on any next key (Chordal
+//    Hold still forces same-hand chords to tap first, so this effectively means
+//    any opposite-hand key, letters included). In flow -> consult
+//    shift_hold_on_other_layout above, so letter rolls keep tapping (kijk).
 //  - Other home-row mods (GUI/Ctrl/Alt): eager-hold on any opposite-hand key.
 //  - Layer-taps (thumbs / V / =): fire on any next key.
 bool get_hold_on_other_key_press_next(uint16_t keycode, keyrecord_t *record,
@@ -112,6 +140,7 @@ bool get_hold_on_other_key_press_next(uint16_t keycode, keyrecord_t *record,
         case MT(MOD_RSFT, KC_J): want = '2'; break;  // right shift
     }
     if (want != 0) {
+        if (shift_out_of_flow) return true;
         uint8_t row = other_record->event.key.row;
         uint8_t col = other_record->event.key.col;
         return (char)pgm_read_byte(&shift_hold_on_other_layout[row][col]) == want;

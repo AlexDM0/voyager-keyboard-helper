@@ -94,9 +94,12 @@ decisions to choose tap vs hold. The order matters:
 **Whether a key opts into eager hold (step 2) is itself per-key**, and that split
 is where most of the feel is tuned:
 
-- **Shift** (`F` / `J`) — *next-key-aware*: eager-holds only before the keys
-  marked in `shift_hold_on_other_layout` (opposite-hand numbers & symbols), so
-  `F` + `/` → `?` is instant while `fish` stays `fish`. (See below.)
+- **Shift** (`F` / `J`) — *flow-aware and next-key-aware*: pressed after a
+  typing pause ("out of flow"), Shift eager-holds before **any** next key, so a
+  sentence-start capital like `Ik` is instant. Mid-flow it eager-holds only
+  before the keys marked in `shift_hold_on_other_layout` (opposite-hand numbers
+  & symbols), so `F` + `/` → `?` is instant while `fish` stays `fish`. (See
+  below.)
 - **GUI / Ctrl / Alt** (`D`/`K`, `S`/`L`, `A`/`;`) — *timeout only*: no eager
   hold at all, so a fast roll can never flip one into an accidental mod; you hold
   past the tapping term to get the mod.
@@ -144,6 +147,30 @@ number row and outer symbol keys, so `F` + `/` → `?` fires instantly — while
 every letter and thumb is `'.'`, so `fish` stays `fish` and `kijk` stays `kijk`.
 Tune any cell by hand to taste.
 
+### Flow state: instant capitals without breaking rolls
+
+The matrix alone has a blind spot: with every letter `'.'`, a capital like `Ik`
+only resolves as Shift via permissive hold (release the `i` before the `F`) or
+by holding `F` past the tapping term. Roll off `F` first and you type `fik`.
+But marking letters in the matrix would bring back the `fish` → `Ish` misfires
+the matrix exists to prevent — the two are the same physical event, and only
+**timing** tells them apart.
+
+So the Shift keys also track flow state. A `pre_process_record_user` hook
+(which sees every event *before* the tap-hold buffering) timestamps each
+keypress; if `F`/`J` goes down more than `SHIFT_FLOW_TERM` (150 ms) after the
+previous keypress, that Shift press is **out of flow** — the start of a word or
+sentence, not a mid-word roll — and eager-holds before **any** next key,
+letters included (Chordal Hold still settles same-hand chords as taps first).
+In-flow presses keep the conservative matrix behaviour.
+
+The result: `Ik` after a pause capitalizes the instant `i` goes down,
+regardless of speed or release order, while mid-sentence rolls keep tapping.
+The remaining trade-off is a rolled `fi`/`ji` at the start of a word typed
+right after a pause (`fiets` as a first word can come out `Iets` if `F` is
+still down when `i` lands); lower `SHIFT_FLOW_TERM` to make the pause detection
+stricter.
+
 ---
 
 ## How it works (the pipeline)
@@ -171,8 +198,8 @@ the matching Oryx file:
   `QUICK_TAP_TERM_PER_KEY`).
 - [`snippets/keymap.c.snippet.js`](snippets/keymap.c.snippet.js) — the tap/hold
   callbacks (`get_chordal_hold`, `get_permissive_hold`,
-  `get_hold_on_other_key_press` + `_next`, `get_quick_tap_term`) and the
-  whitelist map.
+  `get_hold_on_other_key_press` + `_next`, `get_quick_tap_term`), the whitelist
+  map, and the flow-state tracking (`pre_process_record_user`).
 - [`snippets/rules.mk.snippet.js`](snippets/rules.mk.snippet.js) — build rules.
 - [`snippets/macros.js`](snippets/macros.js) — unlimited-length macro expansion.
   Oryx caps macro length, so you create a short placeholder chord in Oryx (e.g.
