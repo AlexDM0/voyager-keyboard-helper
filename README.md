@@ -12,18 +12,21 @@ core — and flash it. One command, every time you re-export.
 ## Setup
 
 ```bash
-# 1. Install deps
-npm install
-
-# 2. Check out ZSA's QMK fork somewhere on your machine
-git clone https://github.com/zsa/qmk_firmware
-
-# 3. Create your config from the template and edit the paths
-cp config.template.js config.js
+./setup.sh
 ```
 
-Edit [`config.js`](config.template.js) to point at your `qmk_firmware` checkout,
-your keymap name, and the Oryx export filename pattern.
+That's it. Following the [official QMK guide](https://docs.qmk.fm/newbs_getting_started),
+the script installs the `qmk` CLI + toolchains, clones **ZSA's QMK fork**
+([`zsa/qmk_firmware`](https://github.com/zsa/qmk_firmware), branch `firmware25`)
+with submodules via `qmk setup`, installs the node dependencies, creates
+`config.js` pointing at the checkout, and test-compiles the Voyager default
+keymap to prove the build environment works. It asks where to put the QMK
+clone (default: `~/voyager-keyboard/qmk`); for non-interactive use, pass
+`QMK_HOME=/some/path ./setup.sh`. Safe to re-run — if `config.js` already
+points at a QMK checkout, that checkout is reused and the clone is skipped.
+
+Then edit [`config.js`](config.template.js): set your keymap name and the Oryx
+export filename pattern (the defaults are the author's).
 
 Then design your layout in Oryx, download the **QMK source** zip to `~/Downloads`,
 and run:
