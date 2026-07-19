@@ -121,6 +121,17 @@ bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
                 break;
         }
         shift_flow_last_press = record->event.time;
+    } else {
+        // Clear the eager-hold flag once the Shift mod-tap that set it is
+        // released, so a stale "out of flow" can never carry into the next
+        // Shift press (which would eager-hold on any key). The flag is only
+        // meaningful while its own Shift is held, so F/J release resets it.
+        switch (keycode) {
+            case MT(MOD_LSFT, KC_F):
+            case MT(MOD_RSFT, KC_J):
+                shift_out_of_flow = false;
+                break;
+        }
     }
     return true;
 }
