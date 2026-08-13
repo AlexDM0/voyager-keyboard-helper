@@ -44,35 +44,52 @@ function modifyFirmware() {
   const configPath = path.join(CONFIG.modifiedSourceFolderPath, 'config.h');
   fs.appendFileSync(configPath, configSnippet.bottom);
 
-  // update the tmp/voyager_alex_source_modified/keymap.c file and add the keymapBottom to the bottom
-  const kemapPath = path.join(CONFIG.modifiedSourceFolderPath, 'keymap.c');
-  fs.appendFileSync(kemapPath, keymapSnippet.bottom);
+  const keymapPath = path.join(CONFIG.modifiedSourceFolderPath, 'keymap.c');
 
-  // update the tmp/voyager_alex_source_modified/keymap.c file and add the keymapTop to the top of the file
-  // read the contents of the keymap.c
-  const keymapContent = fs.readFileSync(kemapPath, 'utf8');
-  // prepend the keymapTop to the keymapContent
-  const newKeymapContent = keymapSnippet.top + keymapContent
-  // const lines = newKeymapContent.split('\n');
-  // const newLines = [];
-  // for (const line of lines) {
-  //   newLines.push(line);
-  //   if (line.includes('bool process_record_user(')) {
-  //     newLines.push(keymapSnippet.processRecordUser);
-  //   }
-  // }
-  // const newKeymapContentWithProcessRecord = newLines.join('\n');
+  // Rename Oryx's callbacks while the file is still the pristine export: the
+  // snippet defines the real entry points with these exact signatures, so
+  // renaming after the snippet is added could silently hit the snippet's own
+  // wrappers (process_record_oryx calling itself -> infinite recursion) instead
+  // of throwing when an export stops matching the anchors.
+  const oryxKeymapContent = fs.readFileSync(keymapPath, 'utf8');
+  const renamedKeymapContent = renameOryxCallbacks(oryxKeymapContent);
+
+  // sandwich the renamed export between the snippet's top and bottom
+  const combinedKeymapContent = keymapSnippet.top + renamedKeymapContent + keymapSnippet.bottom;
 
   // replace all the TT entries with MO
-  const newKeymapContentWithMO = newKeymapContent.replace(/TT\(/g, 'MO(');
+  const keymapContentWithMO = combinedKeymapContent.replace(/TT\(/g, 'MO(');
 
-  const newKeymapWithMacros = insertMacros(newKeymapContentWithMO)
+  const keymapContentWithMacros = insertMacros(keymapContentWithMO);
 
   // replace all the SS_DELAY(100) with SS_DELAY(MACRO_SPEED)
-  const newKeymapContentWithSpeed = newKeymapWithMacros.replace(/SS_DELAY\(100\)/g, 'SS_DELAY(MACRO_SPEED)');
+  const keymapContentWithSpeed = keymapContentWithMacros.replace(/SS_DELAY\(100\)/g, 'SS_DELAY(MACRO_SPEED)');
 
-  // write the newKeymapContent to the keymap.c file
-  fs.writeFileSync(kemapPath, newKeymapContentWithSpeed);
+  fs.writeFileSync(keymapPath, keymapContentWithSpeed);
+}
+
+
+// Oryx generates its own process_record_user() and get_tapping_term(), and QMK
+// allows only one definition of each. Rename the generated ones to *_oryx so the
+// keymap snippet can define the real entry points, add its own behaviour and
+// delegate to Oryx's -- nothing Oryx expresses is lost.
+function renameOryxCallbacks(content) {
+  const renames = [
+    ['bool process_record_user(uint16_t keycode, keyrecord_t *record) {',
+      'bool process_record_oryx(uint16_t keycode, keyrecord_t *record) {'],
+    ['uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {',
+      'uint16_t get_tapping_term_oryx(uint16_t keycode, keyrecord_t *record) {'],
+  ];
+
+  let renamedContent = content;
+  for (const [from, to] of renames) {
+    if (!renamedContent.includes(from)) {
+      throw new Error(`modifyFirmware: expected Oryx callback not found in keymap.c\n  expected: ${from}`);
+    }
+    renamedContent = renamedContent.replace(from, to);
+  }
+
+  return renamedContent;
 }
 
 

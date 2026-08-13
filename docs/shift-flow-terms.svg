@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="344" viewBox="0 0 680 344" role="img" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <title>When a held Shift reaches the OS</title>
+  <desc>Timeline comparing the two Shift tapping terms: 100 ms when the Shift press follows a pause, and the export's 150 ms when it lands mid-word.</desc>
+
+  <rect x="1" y="1" width="678" height="342" rx="16" fill="#FAF9F5" stroke="#ECE7DC" stroke-width="1.5"/>
+
+  <text x="40" y="46" font-size="18" font-weight="500" fill="#3d3d3a">When a held Shift reaches the OS</text>
+  <text x="40" y="68" font-size="13" fill="#73726c">the gap before the Shift press picks which tapping term applies</text>
+
+  <!-- moment of the Shift press -->
+  <text x="210" y="98" font-size="11" fill="#73726c" text-anchor="middle">Shift down</text>
+  <path d="M210,106 L210,290" fill="none" stroke="#bfbdb0" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+  <!-- lane 1: out of flow -->
+  <text x="40" y="142" font-size="14" font-weight="500" fill="#3d3d3a">Out of flow</text>
+  <text x="40" y="160" font-size="12" fill="#73726c">after a pause</text>
+  <rect x="210" y="118" width="390" height="48" rx="8" fill="#F1EFE8" stroke="#E1DDD0"/>
+  <rect x="210" y="118" width="130" height="48" rx="8" fill="#FAEEDA" stroke="#F2DDB0"/>
+  <text x="275" y="147" font-size="13" font-weight="500" fill="#633806" text-anchor="middle">100 ms</text>
+  <path d="M340,112 L340,172" fill="none" stroke="#854F0B" stroke-width="1.6"/>
+  <text x="352" y="139" font-size="13" font-weight="500" fill="#444441">Shift → OS</text>
+  <text x="352" y="156" font-size="11" fill="#5F5E5A">instant for a click or a capital</text>
+
+  <!-- lane 2: in flow -->
+  <text x="40" y="234" font-size="14" font-weight="500" fill="#3d3d3a">In flow</text>
+  <text x="40" y="252" font-size="12" fill="#73726c">mid-word roll</text>
+  <rect x="210" y="210" width="390" height="48" rx="8" fill="#F1EFE8" stroke="#E1DDD0"/>
+  <rect x="210" y="210" width="195" height="48" rx="8" fill="#E6F1FB" stroke="#CFE2F6"/>
+  <text x="307" y="239" font-size="13" font-weight="500" fill="#0C447C" text-anchor="middle">150 ms — export term</text>
+  <path d="M405,204 L405,264" fill="none" stroke="#185FA5" stroke-width="1.6"/>
+  <text x="417" y="231" font-size="13" font-weight="500" fill="#444441">Shift → OS</text>
+  <text x="417" y="248" font-size="11" fill="#5F5E5A">held long enough to be deliberate</text>
+
+  <!-- time axis -->
+  <path d="M210,290 L600,290" fill="none" stroke="#bfbdb0" stroke-width="1.2"/>
+  <path d="M210,290 L210,296" fill="none" stroke="#bfbdb0" stroke-width="1.2"/>
+  <path d="M340,290 L340,296" fill="none" stroke="#bfbdb0" stroke-width="1.2"/>
+  <path d="M470,290 L470,296" fill="none" stroke="#bfbdb0" stroke-width="1.2"/>
+  <path d="M600,290 L600,296" fill="none" stroke="#bfbdb0" stroke-width="1.2"/>
+  <text x="210" y="312" font-size="11" fill="#73726c" text-anchor="middle">0</text>
+  <text x="340" y="312" font-size="11" fill="#73726c" text-anchor="middle">100</text>
+  <text x="470" y="312" font-size="11" fill="#73726c" text-anchor="middle">200</text>
+  <text x="600" y="312" font-size="11" fill="#73726c" text-anchor="middle">300 ms</text>
+</svg>
