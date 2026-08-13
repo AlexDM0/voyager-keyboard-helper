@@ -150,6 +150,13 @@ static uint8_t held_shift_hands = 0;
 static uint8_t held_shift_mod_bits_left  = 0;
 static uint8_t held_shift_mod_bits_right = 0;
 
+// Hands whose held Shift has already put a capital on the wire -- an
+// opposite-hand letter went out under it. That capital is proof the hold was
+// meant, so for the rest of it the same-hand guard stands down and every
+// following letter capitalises too: GRAPH, not GRAph. Cleared with the hold, so
+// the next Shift press starts guarded again.
+static uint8_t shift_capital_produced_hands = 0;
+
 // Shift bits taken off the report for one same-hand keypress (see the guard
 // below), plus the lending hand and the key that borrowed them so they can be
 // handed back.
@@ -259,13 +266,21 @@ uint16_t get_quick_tap_term(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-// A capital must always come from the OTHER hand. Chordal Hold already enforces
+// The FIRST capital must come from the OTHER hand. Chordal Hold already enforces
 // that while the Shift mod-tap is still undecided, but once Shift has settled as
 // a hold -- the tapping term expired with no interrupting key -- nothing stops
 // the next same-hand letter from being capitalised: that is eindeliJK coming out
 // as eindeliK. So while a Shift mod-tap is held, a letter on the SAME hand has
 // Shift stripped from its report and typed lowercase; Shift is handed back right
 // after, still live for the next off-hand key.
+//
+// That suspicion is only warranted until the hold proves itself. An accidental
+// hold is one the user never meant, so it never gets an off-hand capital out of
+// the way first -- whereas a deliberate one does, immediately. So the moment an
+// opposite-hand letter goes out capitalised, the hold is proven and the guard
+// stands down for the rest of it: GRAPH stays GRAPH instead of turning into
+// GRAph when the word crosses back to the Shift's own hand. The proof is per
+// hand and dies with the hold, so the next Shift press is guarded again.
 //
 // The Shift key's own letter is deliberately NOT typed out here. By the time the
 // guard runs, Shift has already gone to the OS as a modifier -- that decision is
@@ -286,7 +301,8 @@ static void apply_same_hand_shift_guard(uint16_t keycode, keyrecord_t *record) {
         // see held_shift_hands. Its Shift is being unregistered right now, so any
         // borrowed Shift is dropped rather than handed back.
         if (is_shift_mod_tap(keycode) && key_hand != 0) {
-            held_shift_hands &= ~key_hand;
+            held_shift_hands             &= ~key_hand;
+            shift_capital_produced_hands &= ~key_hand;
             if (key_hand == SHIFT_HAND_LEFT) {
                 held_shift_mod_bits_left  = 0;
             } else {
@@ -307,9 +323,9 @@ static void apply_same_hand_shift_guard(uint16_t keycode, keyrecord_t *record) {
     // previous keypress goes back before this one is judged on its own merits.
     restore_stripped_shift();
 
-    // Guard only same-hand keys: '*' thumbs, no Shift held, and a Shift held on
-    // the opposite hand all pass through untouched.
-    if (key_hand == 0 || held_shift_hands != key_hand) return;
+    // Nothing to weigh without a Shift mod-tap down, and a '*' thumb belongs to
+    // neither hand, so it is never same-hand and never a capital either.
+    if (key_hand == 0 || held_shift_hands == 0) return;
 
     // A tap-hold key that settled as a HOLD is a modifier or a layer, never a
     // letter -- D held past its term is Cmd, so leave Shift alone and let the
@@ -321,10 +337,29 @@ static void apply_same_hand_shift_guard(uint16_t keycode, keyrecord_t *record) {
     if (tap_keycode < KC_A || tap_keycode > KC_Z) return;  // letters only
 
     // A GUI/Ctrl/Alt already down means this is a shortcut chord, not typing --
-    // Shift belongs in it. Cmd+Shift+A must stay Cmd+Shift+A even though A sits
-    // on the same hand as the Shift (and A is itself a mod-tap, so it does reach
+    // Shift belongs in it and no capital is being written either, so this counts
+    // for neither side. Cmd+Shift+A must stay Cmd+Shift+A even though A sits on
+    // the same hand as the Shift (and A is itself a mod-tap, so it does reach
     // this point as a settled tap).
     if ((get_mods() & ~MOD_MASK_SHIFT) != 0) return;
+
+    // An opposite-hand letter under a live Shift IS the capital, and it goes out
+    // untouched. Remember that it did: from here until the Shift is released the
+    // hold is proven deliberate, so the guard below stands down and the rest of
+    // the word capitalises with it.
+    if ((held_shift_hands & key_hand) == 0) {
+        if ((get_mods() & MOD_MASK_SHIFT) != 0) {
+            shift_capital_produced_hands |= held_shift_hands;
+        }
+        return;
+    }
+
+    // A Shift held on the opposite hand as well always wins.
+    if (held_shift_hands != key_hand) return;
+
+    // The capital run: this hold has already written a capital, so the letter is
+    // meant to be one too -- GRAPH rather than GRAph.
+    if ((shift_capital_produced_hands & key_hand) != 0) return;
 
     // Borrow only the bits the same-hand mod-tap itself registered. Shift from
     // any other source (a plain Shift key, Caps Word) is deliberate and stays,

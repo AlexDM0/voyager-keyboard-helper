@@ -92,7 +92,7 @@ decisions to choose tap vs hold. The order matters:
 > **No interrupting key at all:** the tapping term simply expires and the key
 > resolves on plain release (tap) vs continued hold (hold) — none of the three
 > callbacks are consulted. This is the gap the
-> [same-hand Shift guard](#a-capital-always-comes-from-the-other-hand) closes.
+> [same-hand Shift guard](#the-first-capital-comes-from-the-other-hand) closes.
 
 **Whether a key opts into eager hold (step 2) is itself per-key**, and that split
 is where most of the feel is tuned:
@@ -102,8 +102,8 @@ is where most of the feel is tuned:
   sentence-start capital like `Ik` is instant. Mid-flow it eager-holds only
   before the keys marked in `shift_hold_on_other_layout` (opposite-hand numbers
   & symbols), so `F` + `/` → `?` is instant while `fish` stays `fish`. Whichever
-  way it settles, a same-hand letter afterwards is still typed lowercase. (See
-  below.)
+  way it settles, the *first* same-hand letter afterwards is still typed
+  lowercase. (See below.)
 - **GUI / Ctrl / Alt** (`D`/`K`, `S`/`L`, `A`/`;`) — *timeout only*: no eager
   hold at all, so a fast roll can never flip one into an accidental mod; you hold
   past the tapping term to get the mod.
@@ -188,7 +188,7 @@ turn into a mod mid-word. This term is the only thing standing between a letter
 and a modifier: once it expires, Shift is on the wire and the guard below can
 suppress it for a keypress but never take it back.
 
-### A capital always comes from the other hand
+### The first capital comes from the other hand
 
 Everything above decides the tap-vs-hold question *while the Shift is still
 undecided*, and Chordal Hold guarantees the handedness there. But once Shift has
@@ -197,10 +197,10 @@ guarantee is gone: the next key is processed with Shift already registered, so a
 same-hand roll capitalises. That's `eindelijk` coming out as `eindeliK`, because
 `J` (right Shift) was held a fraction too long before `K` (also right hand).
 
-So while a Shift mod-tap is held, a **letter on the same hand** has Shift
-stripped from its report and is typed lowercase:
+So while a Shift mod-tap is held, the **first letter on the same hand** has
+Shift stripped from its report and is typed lowercase:
 
-![Once Shift has settled as a hold, a hold builds a modifier stack, an opposite-hand key capitalises, and only a same-hand letter typed outside a chord is forced lowercase.](docs/same-hand-guard.png)
+![Once Shift has settled as a hold, a hold builds a modifier stack, an opposite-hand key capitalises, and a same-hand letter typed outside a chord is forced lowercase only until this hold has sent its first capital.](docs/same-hand-guard.png)
 
 The guard is deliberately narrow — it only ever touches `KC_A`–`KC_Z` on the
 same hand, so `Shift`+symbol, `Shift`+arrow, `Shift`+thumb and shift-click are
@@ -210,6 +210,19 @@ other source (a plain `Shift` key on another layer, Caps Word) is deliberate
 and is left in the report, so its capital is typed. Shift is handed back on the
 next key event, so it's borrowed for exactly one keypress and not for the rest
 of the hold: `F`-held → `e` → `o` gives `eO`.
+
+**The guard stands down once the hold proves itself.** Stripping same-hand
+letters for the *whole* hold breaks the other direction: typing `GRAPH` with
+right Shift held, `G`/`R`/`A` capitalise from the left hand but `P` and `H` come
+back to the Shift's own hand and would be forced lowercase — `GRAph`. The two
+cases separate cleanly on what happened *before* the same-hand letter. An
+accidental hold (`eindelijk`) never gets an opposite-hand capital out first —
+the same-hand letter is the very next thing that happens. A deliberate one puts
+a capital on the wire immediately. So the first opposite-hand letter typed under
+a live Shift is treated as proof the hold was meant, and from that point until
+the Shift is released the guard is off and every following letter capitalises,
+whichever hand it's on. The proof is tracked per hand and cleared with the hold,
+so the next Shift press starts guarded again — `eindeliK` stays fixed.
 
 **Modifier stacks are safe**, because the guard runs on the tap-vs-hold
 *decision* rather than on the physical press. For a tap-hold key, QMK's
