@@ -379,10 +379,14 @@ static void apply_same_hand_shift_guard(uint16_t keycode, keyrecord_t *record) {
 }
 
 // Oryx owns process_record_user() and get_tapping_term() in the export;
-// modifyFirmware.js renames them to *_oryx so these wrappers can front them.
+// modifyFirmware.js renames them to oryx_export_* so these wrappers can front
+// them. The prefix is deliberately not an _oryx suffix: QMK generates a weak
+// hook named after each community module, and ZSA ships an oryx one, so
+// process_record_oryx() is already called by process_record_modules() on every
+// key event -- defining it here would run the export's macro switch twice.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     apply_same_hand_shift_guard(keycode, record);
-    return process_record_oryx(keycode, record);
+    return oryx_export_process_record(keycode, record);
 }
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
@@ -390,7 +394,7 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
         (shift_out_of_flow_hands & hand_bit_of_event(record->event)) != 0) {
         return SHIFT_OUT_OF_FLOW_HOLD_TERM;
     }
-    return get_tapping_term_oryx(keycode, record);
+    return oryx_export_get_tapping_term(keycode, record);
 }
 
 `

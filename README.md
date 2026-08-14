@@ -296,10 +296,19 @@ the matching Oryx file:
 
   Two of these — `process_record_user` and `get_tapping_term` — are already
   defined by Oryx, and QMK allows only one definition of each. Step 2 renames
-  the generated ones to `process_record_oryx` / `get_tapping_term_oryx`, and the
-  snippet defines the real entry points, adds its own behaviour and delegates to
-  Oryx's, so nothing Oryx expresses is lost. Both renames throw if the anchor
-  ever disappears from an export, rather than silently dropping behaviour.
+  the generated ones to `oryx_export_process_record` /
+  `oryx_export_get_tapping_term`, and the snippet defines the real entry points,
+  adds its own behaviour and delegates to Oryx's, so nothing Oryx expresses is
+  lost. Both renames throw if the anchor ever disappears from an export, rather
+  than silently dropping behaviour.
+
+  The `oryx_export_` prefix matters. QMK's community-module system generates a
+  weak hook named `<callback>_<module>` for every module, and ZSA ships one
+  called `oryx` — so `process_record_oryx()` is already a QMK symbol that
+  `process_record_modules()` calls on every key event. The earlier `*_oryx`
+  naming silently overrode that stub and left the Oryx export body with two
+  callers, which made every `SEND_STRING` macro fire twice. Any new name here
+  must stay clear of the `<callback>_<module>` shape.
 - [`snippets/rules.mk.snippet.js`](snippets/rules.mk.snippet.js) — build rules.
 - [`snippets/macros.js`](snippets/macros.js) — unlimited-length macro expansion.
   Oryx caps macro length, so you create a short placeholder chord in Oryx (e.g.

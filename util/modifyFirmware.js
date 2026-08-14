@@ -49,8 +49,8 @@ function modifyFirmware() {
   // Rename Oryx's callbacks while the file is still the pristine export: the
   // snippet defines the real entry points with these exact signatures, so
   // renaming after the snippet is added could silently hit the snippet's own
-  // wrappers (process_record_oryx calling itself -> infinite recursion) instead
-  // of throwing when an export stops matching the anchors.
+  // wrappers (the wrapper calling itself -> infinite recursion) instead of
+  // throwing when an export stops matching the anchors.
   const oryxKeymapContent = fs.readFileSync(keymapPath, 'utf8');
   const renamedKeymapContent = renameOryxCallbacks(oryxKeymapContent);
 
@@ -70,15 +70,24 @@ function modifyFirmware() {
 
 
 // Oryx generates its own process_record_user() and get_tapping_term(), and QMK
-// allows only one definition of each. Rename the generated ones to *_oryx so the
-// keymap snippet can define the real entry points, add its own behaviour and
-// delegate to Oryx's -- nothing Oryx expresses is lost.
+// allows only one definition of each. Rename the generated ones so the keymap
+// snippet can define the real entry points, add its own behaviour and delegate
+// to Oryx's -- nothing Oryx expresses is lost.
+//
+// The new names must NOT look like `<hook>_<module>`: QMK's community-module
+// system generates a weak hook per module for every callback, and ZSA ships an
+// `oryx` module, so `process_record_oryx()` is already a real QMK symbol that
+// process_record_modules() calls on every key event. Using that name for the
+// renamed callback overrode the weak stub and gave the export body two callers
+// -- the module chain AND our process_record_user() wrapper -- so every
+// SEND_STRING macro fired twice. Hence the `oryx_export_` prefix, which cannot
+// collide with any generated `<hook>_<module>` name.
 function renameOryxCallbacks(content) {
   const renames = [
     ['bool process_record_user(uint16_t keycode, keyrecord_t *record) {',
-      'bool process_record_oryx(uint16_t keycode, keyrecord_t *record) {'],
+      'bool oryx_export_process_record(uint16_t keycode, keyrecord_t *record) {'],
     ['uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {',
-      'uint16_t get_tapping_term_oryx(uint16_t keycode, keyrecord_t *record) {'],
+      'uint16_t oryx_export_get_tapping_term(uint16_t keycode, keyrecord_t *record) {'],
   ];
 
   let renamedContent = content;
